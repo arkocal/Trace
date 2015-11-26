@@ -29,6 +29,8 @@ using namespace std;
 
 const int WIDTH = 1280;
 const int HEIGHT = 720;
+const Vec3b YELLOW(115,215,175);
+const double THRESHOLD =2;
 
 class Tracer{
 private:
@@ -62,12 +64,14 @@ void Tracer::mainloop() {
     stream.read(cameraFrame);
     frames++;
 
-    for (int i=0; i<100; i++) {
-      for (int j=0; j<100; j++) {
+    for (int i=0; i<WIDTH; i++) {
+      for (int j=0; j<HEIGHT; j++) {
 	Vec3b &c = cameraFrame.at<Vec3b>(Point(i,j));
-	c[0] = 0;
-	c[1] = 0;
-	c[2] = 255;
+	if (norm(YELLOW-c)<THRESHOLD) {
+	  c[0] = 0;
+	  c[1] = 0;
+	  c[2] = 255;
+	}
       }
     }
 
