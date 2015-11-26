@@ -62,6 +62,15 @@ void Tracer::mainloop() {
     stream.read(cameraFrame);
     frames++;
 
+    for (int i=0; i<100; i++) {
+      for (int j=0; j<100; j++) {
+	Vec3b &c = cameraFrame.at<Vec3b>(Point(i,j));
+	c[0] = 0;
+	c[1] = 0;
+	c[2] = 255;
+      }
+    }
+
     imshow("Camera", cameraFrame);
     if (waitKey(1) >= 0)
       break;
