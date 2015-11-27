@@ -31,6 +31,7 @@ const int WIDTH = 1280;
 const int HEIGHT = 720;
 const Vec3b YELLOW(55,170,130);
 const double THRESHOLD = 30;
+const int STEP=10;
 
 class Tracer{
 private:
@@ -63,8 +64,8 @@ void Tracer::mainloop(bool displayFrames) {
       break;
     frames++;
 
-    for (int i=0; i<WIDTH; i++) {
-      for (int j=0; j<HEIGHT; j++) {
+    for (int i=0; i<WIDTH; i+=10) {
+      for (int j=0; j<HEIGHT; j+=10) {
 	Vec3b &c = cameraFrame.at<Vec3b>(Point(i,j));
 	if (norm(YELLOW-c)<THRESHOLD) {
 	  c[0] = 0;
