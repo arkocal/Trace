@@ -29,8 +29,8 @@ using namespace std;
 
 const int WIDTH = 1280;
 const int HEIGHT = 720;
-const Vec3b YELLOW(115,215,175);
-const double THRESHOLD =2;
+const Vec3b YELLOW(55,170,130);
+const double THRESHOLD = 30;
 
 class Tracer{
 private:
@@ -40,28 +40,27 @@ private:
 
 public:
   Tracer();
-  void mainloop();
+  void mainloop(bool);
 };
 
 
 Tracer::Tracer()
 {
   // Setup video stream
-  stream = VideoCapture(0);
-  stream.set(CV_CAP_PROP_FRAME_WIDTH, WIDTH);
-  stream.set(CV_CAP_PROP_FRAME_HEIGHT, HEIGHT);
+  stream = VideoCapture("input.webm");
 
   if (!stream.isOpened()) {
-    cout << "Can not access camera at 0" << endl;
+    cout << "Can not access input.webm" << endl;
     exit(EXIT_FAILURE);
   }
   stream.read(cameraFrame);
   frames = 0;
 }
 
-void Tracer::mainloop() {
+void Tracer::mainloop(bool displayFrames) {
   while (true) {
-    stream.read(cameraFrame);
+    if (!stream.read(cameraFrame))
+      break;
     frames++;
 
     for (int i=0; i<WIDTH; i++) {
@@ -75,15 +74,24 @@ void Tracer::mainloop() {
       }
     }
 
-    imshow("Camera", cameraFrame);
-    if (waitKey(1) >= 0)
-      break;
+    if (displayFrames) {
+      imshow("Camera", cameraFrame);
+      if (waitKey(40) >= 0)
+	break;
+    }
   }
   cout << "Frames:" << frames << endl;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
   Tracer* t = new Tracer();
-  t->mainloop();
+  bool displayFrames;
+  for (int i=0; i<argc; i++) {
+    if(strcmp("show", argv[i])==0){
+      displayFrames = true;
+      break;
+    }
+  }
+  t->mainloop(displayFrames);
   return 0;
 }
