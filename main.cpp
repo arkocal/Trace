@@ -38,7 +38,8 @@ private:
   int frames;
   Mat cameraFrame;
   VideoCapture stream;
-
+  // Map in which frame the pixel was yellow for the last time.
+  int* matchesMap;
 public:
   Tracer();
   void mainloop(bool);
@@ -56,6 +57,10 @@ Tracer::Tracer()
   }
   stream.read(cameraFrame);
   frames = 0;
+
+  matchesMap = new int[WIDTH*HEIGHT];
+  for (int i=0; i<WIDTH*HEIGHT; i++)
+	matchesMap[i] = -1;
 }
 
 void Tracer::mainloop(bool displayFrames) {
@@ -64,18 +69,31 @@ void Tracer::mainloop(bool displayFrames) {
       break;
     frames++;
 
+    int countMatches = 0;
+    int matches[WIDTH*HEIGHT][2];
+
     for (int i=0; i<WIDTH; i+=10) {
       for (int j=0; j<HEIGHT; j+=10) {
 	Vec3b &c = cameraFrame.at<Vec3b>(Point(i,j));
 	if (norm(YELLOW-c)<THRESHOLD) {
-	  c[0] = 0;
-	  c[1] = 0;
-	  c[2] = 255;
+	    matches[countMatches][0] = i;
+	    matches[countMatches][1] = j;
+	    countMatches++;
+	    matchesMap[i+WIDTH*j] = frames;
 	}
       }
     }
 
     if (displayFrames) {
+      // Mark frames
+      for (int i=0; i<countMatches; i++) {
+	int x = matches[i][0];
+	int y = matches[i][1];
+	Vec3b &color = cameraFrame.at<Vec3b>(Point(x,y));
+	color[0] = 0;
+	color[1] = 0;
+	color[2] = 255;
+      }
       imshow("Camera", cameraFrame);
       if (waitKey(40) >= 0)
 	break;
