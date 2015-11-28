@@ -72,6 +72,7 @@ void Tracer::mainloop(bool displayFrames) {
     int countMatches = 0;
     int matches[WIDTH*HEIGHT][2];
 
+    // First matches
     for (int i=0; i<WIDTH; i+=10) {
       for (int j=0; j<HEIGHT; j+=10) {
 	Vec3b &c = cameraFrame.at<Vec3b>(Point(i,j));
@@ -80,6 +81,30 @@ void Tracer::mainloop(bool displayFrames) {
 	    matches[countMatches][1] = j;
 	    countMatches++;
 	    matchesMap[i+WIDTH*j] = frames;
+	}
+      }
+    }
+
+    // Neighbour matches
+    for (int i=0; i<countMatches; i++) {
+      //cout << count_matches << endl;
+      int x = matches[i][0];
+      int y = matches[i][1];
+      for (int ox=-1; ox<=1; ox+=2) {
+	if (x+ox < 0 || x+ox >= WIDTH)
+	  continue;
+	for (int oy=-1; oy<=1; oy+=2) {
+	  if (y+oy < 0 || y+oy >= HEIGHT)
+	    continue;
+	  Vec3b &color = cameraFrame.at<Vec3b>(Point(x+ox,y+oy));
+	  if (matchesMap[x+ox+(y+oy)*WIDTH]==frames)
+	    continue;
+	  if (norm(YELLOW-color)<THRESHOLD) {
+	      matches[countMatches][0] = x+ox;
+	      matches[countMatches][1] = y+oy;
+	      matchesMap[x+ox+WIDTH*(y+oy)] = frames;
+	      countMatches++;
+	  }
 	}
       }
     }
