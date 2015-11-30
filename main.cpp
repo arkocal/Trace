@@ -29,7 +29,6 @@ using namespace std;
 
 const int WIDTH = 1280;
 const int HEIGHT = 720;
-const Vec3b YELLOW(55,170,130);
 const double THRESHOLD = 30;
 const int STEP=10;
 
@@ -41,18 +40,18 @@ private:
   // Map in which frame the pixel was yellow for the last time.
   int* matchesMap;
 public:
-  Tracer();
+  Tracer(char*);
   void mainloop(bool);
 };
 
 
-Tracer::Tracer()
+Tracer::Tracer(char* filename)
 {
   // Setup video stream
-  stream = VideoCapture("input.webm");
+  stream = VideoCapture(filename);
 
   if (!stream.isOpened()) {
-    cout << "Can not access input.webm" << endl;
+    cout << "Can not access input" << endl;
     exit(EXIT_FAILURE);
   }
   stream.read(cameraFrame);
@@ -76,7 +75,7 @@ void Tracer::mainloop(bool displayFrames) {
     for (int i=0; i<WIDTH; i+=10) {
       for (int j=0; j<HEIGHT; j+=10) {
 	Vec3b &c = cameraFrame.at<Vec3b>(Point(i,j));
-	if (norm(YELLOW-c)<THRESHOLD) {
+	if (c[0]<160 && c[1]>200 && c[2]>200) {
 	    matches[countMatches][0] = i;
 	    matches[countMatches][1] = j;
 	    countMatches++;
@@ -87,7 +86,6 @@ void Tracer::mainloop(bool displayFrames) {
 
     // Neighbour matches
     for (int i=0; i<countMatches; i++) {
-      //cout << count_matches << endl;
       int x = matches[i][0];
       int y = matches[i][1];
       for (int ox=-1; ox<=1; ox+=2) {
@@ -99,7 +97,7 @@ void Tracer::mainloop(bool displayFrames) {
 	  Vec3b &color = cameraFrame.at<Vec3b>(Point(x+ox,y+oy));
 	  if (matchesMap[x+ox+(y+oy)*WIDTH]==frames)
 	    continue;
-	  if (norm(YELLOW-color)<THRESHOLD) {
+	  if (color[0]<160 && color[1]>200 && color[2]>200) {
 	      matches[countMatches][0] = x+ox;
 	      matches[countMatches][1] = y+oy;
 	      matchesMap[x+ox+WIDTH*(y+oy)] = frames;
@@ -128,7 +126,6 @@ void Tracer::mainloop(bool displayFrames) {
 }
 
 int main(int argc, char *argv[]) {
-  Tracer* t = new Tracer();
   bool displayFrames;
   for (int i=0; i<argc; i++) {
     if(strcmp("show", argv[i])==0){
@@ -136,6 +133,7 @@ int main(int argc, char *argv[]) {
       break;
     }
   }
+  Tracer* t = new Tracer(argv[1]);
   t->mainloop(displayFrames);
   return 0;
 }
